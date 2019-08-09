@@ -3,37 +3,43 @@ def print_header
   puts "The students of Villains Academy"
   puts "------------"
 end
+
 def print_students_list
   @students.each.with_index(1) do |student, index|
     puts "#{index}. #{student[:name]} (#{student[:cohort]} cohort)"
   end
 end
+
 def print_footer
   puts "Overall we have #{@students.count} great students"
 end
+
+def add_student(name)
+  # add the student hash to the array
+  @students << {name: name, cohort: :november}
+end
+
 def input_students
   puts "Please enter the names of the students"
   puts "To finish, just hit return twice"
-  # create an empty array
   #gets the first name
-  name = gets.chomp
-  # while the array is not empty, repeat this code
+  name = STDIN.gets.chomp
+  # while the name is not empty, repeat this code
   while !name.empty? do
     # add the student hash to the array
-    @students << {name: name, cohort: :november}
+    add_student(name)
     puts "Now we have #{@students.count} students"
     # gets another name from the user
-    name = gets.chomp
+    name = STDIN.gets.chomp
   end
 end
-def load_students
-  file = File.open("students.csv", "r")
-  file.readlines.each do |line|
-    name, cohort = line.chomp.split(",")
-    @students << {name: name, cohort: cohort.to_sym}
-  end
-  file.close
+
+def show_students
+  print_header
+  print_students_list
+  print_footer
 end
+
 def save_students
   # open the file for writing
   file = File.open("students.csv", "w")
@@ -45,6 +51,16 @@ def save_students
   end
   file.close
 end
+
+def load_students(filename = "students.csv")
+  file = File.open(filename, "r")
+  file.readlines.each do |line|
+    name, cohort = line.chomp.split(",")
+    add_student(name)
+  end
+  file.close
+end
+
 def print_menu
   puts "1. Input the students"
   puts "2. Show the students"
@@ -52,11 +68,7 @@ def print_menu
   puts "4. Load the list from students.csv"
   puts "9. Exit"
 end
-def show_students
-  print_header
-  print_students_list
-  print_footer
-end
+
 def process(selection)
   case selection
     when "1"
@@ -73,12 +85,27 @@ def process(selection)
       puts "I don't know what you meant, try again"
   end
 end
+
 def interactive_menu
   loop do
     print_menu
-    process(gets.chomp)
+    process(STDIN.gets.chomp)
+  end
+end
+
+def try_load_students
+  filename = ARGV.first # first argument from the command line
+  return if filename.nil? # get out of the method if it isn't given
+  if File.exists?(filename) # if it exists
+    load_students(filename)
+    puts "Loaded #{@students.count} from #{filename}"
+  else
+    puts " Sorry #{filename} doesn't exist"
+    exit
   end
 end
 #nothing happens until we call the methods
+
+try_load_students
 interactive_menu
 
