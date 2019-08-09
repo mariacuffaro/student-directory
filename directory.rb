@@ -2,7 +2,7 @@
 @menu = ["1. Input the students",
   "2. Show the students",
   "3. Save the students to csv",
-  "4. Load the list from students.csv",
+  "4. Load student list from csv file",
   "9. Exit"
   ]
 @filename = ARGV.first # first argument from the command line
@@ -45,7 +45,7 @@ def show_students
 end
 
 def save_students
-  file = File.open("students.csv", "w")
+  file = File.open(@filename, "w")
   @students.each do |student|
     file.puts [student[:name], student[:cohort]].join(",")
   end
@@ -54,11 +54,14 @@ end
 
 def load_students
   file = File.open(@filename, "r")
+  line_count = 0
   file.readlines.each do |line|
     name = line.chomp.split(",")[0]
     add_student(name)
+    line_count += 1
   end
   file.close
+  puts "Loaded #{line_count} from #{@filename}"
 end
 
 def user_input
@@ -78,9 +81,13 @@ def process(selection)
     when "2"
       show_students
     when "3"
-      save_students
+      puts "Which file would you like to save to?  Default is students.csv"
+      @filename = user_input
+      try_save_students
     when "4"
-      load_students
+      puts "Which file would you like to load from?  Default is students.csv"
+      @filename = user_input
+      try_load_students
     when "9"
       exit # this will cause the program to terminate
     else
@@ -95,11 +102,21 @@ def interactive_menu
   end
 end
 
+def try_save_students
+  @filename.nil? ? @filename = "students.csv" : @filename = @filename
+  if File.exists?(@filename) # if it exists
+    save_students
+    puts "Saved #{@students.count} to #{@filename}"
+  else
+    puts " Sorry #{@filename} doesn't exist"
+    exit
+  end
+end
+
 def try_load_students
   @filename.nil? ? @filename = "students.csv" : @filename = @filename
   if File.exists?(@filename) # if it exists
     load_students
-    puts "Loaded #{@students.count} from #{@filename}"
   else
     puts " Sorry #{@filename} doesn't exist"
     exit
