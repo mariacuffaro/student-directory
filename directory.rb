@@ -1,4 +1,12 @@
 @students = [] # and empty array accessible to all methods
+@menu = ["1. Input the students",
+  "2. Show the students",
+  "3. Save the students to csv",
+  "4. Load the list from students.csv",
+  "9. Exit"
+  ]
+@filename = ARGV.first # first argument from the command line
+  
 def print_header
   puts "The students of Villains Academy"
   puts "------------"
@@ -18,19 +26,15 @@ def add_student(name)
   # add the student hash to the array
   @students << {name: name, cohort: :november}
 end
-
+  
 def input_students
   puts "Please enter the names of the students"
   puts "To finish, just hit return twice"
-  #gets the first name
-  name = STDIN.gets.chomp
-  # while the name is not empty, repeat this code
+  name = user_input
   while !name.empty? do
-    # add the student hash to the array
     add_student(name)
     puts "Now we have #{@students.count} students"
-    # gets another name from the user
-    name = STDIN.gets.chomp
+    name = user_input
   end
 end
 
@@ -41,32 +45,30 @@ def show_students
 end
 
 def save_students
-  # open the file for writing
   file = File.open("students.csv", "w")
-  # iterate over the array of students
   @students.each do |student|
-    student_data = [student[:name], student[:cohort]]
-    csv_line = student_data.join(",")
-    file.puts csv_line
+    file.puts [student[:name], student[:cohort]].join(",")
   end
   file.close
 end
 
-def load_students(filename = "students.csv")
-  file = File.open(filename, "r")
+def load_students
+  file = File.open(@filename, "r")
   file.readlines.each do |line|
-    name, cohort = line.chomp.split(",")
+    name = line.chomp.split(",")[0]
     add_student(name)
   end
   file.close
 end
 
+def user_input
+  STDIN.gets.chomp
+end
+
 def print_menu
-  puts "1. Input the students"
-  puts "2. Show the students"
-  puts "3. Save the students to csv"
-  puts "4. Load the list from students.csv"
-  puts "9. Exit"
+  @menu.each do |menu_item|
+    puts menu_item
+  end
 end
 
 def process(selection)
@@ -89,19 +91,17 @@ end
 def interactive_menu
   loop do
     print_menu
-    process(STDIN.gets.chomp)
+    process(user_input)
   end
 end
 
 def try_load_students
-  #filename = ARGV.first # first argument from the command line
-  #return if filename.nil? # get out of the method if it isn't given
-  ARGV.first.nil? ? filename = "students.csv" : filename = ARGV.first
-  if File.exists?(filename) # if it exists
-    load_students(filename)
-    puts "Loaded #{@students.count} from #{filename}"
+  @filename.nil? ? @filename = "students.csv" : @filename = @filename
+  if File.exists?(@filename) # if it exists
+    load_students
+    puts "Loaded #{@students.count} from #{@filename}"
   else
-    puts " Sorry #{filename} doesn't exist"
+    puts " Sorry #{@filename} doesn't exist"
     exit
   end
 end
