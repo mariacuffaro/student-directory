@@ -31,11 +31,14 @@ def input_students
   puts "Please enter the names of the students"
   puts "To finish, just hit return twice"
   name = user_input
+  initial_count = @students.count
   while !name.empty? do
     add_student(name)
     puts "Now we have #{@students.count} students"
     name = user_input
   end
+  number_added = @students.count - initial_count
+  puts "You added #{number_added} students to the list"
 end
 
 def show_students
@@ -45,22 +48,23 @@ def show_students
 end
 
 def save_students
-  file = File.open(@filename, "w")
-  @students.each do |student|
-    file.puts [student[:name], student[:cohort]].join(",")
+  File.open(@filename, "w") do |file|
+    @students.each do |student|
+      file.puts [student[:name], student[:cohort]].join(",")
+    end
   end
-  file.close
+  puts "Saved #{@students.count} to #{@filename}"
 end
 
 def load_students
-  file = File.open(@filename, "r")
   line_count = 0
-  file.readlines.each do |line|
-    name = line.chomp.split(",")[0]
-    add_student(name)
-    line_count += 1
+  File.open(@filename, "r") do |file|
+    file.readlines.each do |line|
+      name = line.chomp.split(",")[0]
+      add_student(name)
+      line_count += 1
+    end
   end
-  file.close
   puts "Loaded #{line_count} from #{@filename}"
 end
 
@@ -81,12 +85,8 @@ def process(selection)
     when "2"
       show_students
     when "3"
-      puts "Which file would you like to save to?  Default is students.csv"
-      @filename = user_input
       try_save_students
     when "4"
-      puts "Which file would you like to load from?  Default is students.csv"
-      @filename = user_input
       try_load_students
     when "9"
       exit # this will cause the program to terminate
@@ -103,10 +103,11 @@ def interactive_menu
 end
 
 def try_save_students
-  @filename.nil? ? @filename = "students.csv" : @filename = @filename
+  puts "Which file would you like to save to?  Default is students.csv"
+  @filename = user_input
+  @filename.nil? || @filename == "" ? @filename = "students.csv" : @filename = @filename
   if File.exists?(@filename) # if it exists
     save_students
-    puts "Saved #{@students.count} to #{@filename}"
   else
     puts " Sorry #{@filename} doesn't exist"
     exit
@@ -114,7 +115,9 @@ def try_save_students
 end
 
 def try_load_students
-  @filename.nil? ? @filename = "students.csv" : @filename = @filename
+  puts "Which file would you like to load from?  Default is students.csv"
+  @filename = user_input
+  @filename.nil? || @filename =="" ? @filename = "students.csv" : @filename = @filename
   if File.exists?(@filename) # if it exists
     load_students
   else
