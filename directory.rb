@@ -1,3 +1,5 @@
+require "csv"
+
 @students = [] # and empty array accessible to all methods
 @menu = ["1. Input the students",
   "2. Show the students",
@@ -48,9 +50,9 @@ def show_students
 end
 
 def save_students
-  File.open(@filename, "w") do |file|
+  CSV.open(@filename, "w") do |file|
     @students.each do |student|
-      file.puts [student[:name], student[:cohort]].join(",")
+      file << [student[:name], student[:cohort]]
     end
   end
   puts "Saved #{@students.count} to #{@filename}"
@@ -58,12 +60,10 @@ end
 
 def load_students
   line_count = 0
-  File.open(@filename, "r") do |file|
-    file.readlines.each do |line|
-      name = line.chomp.split(",")[0]
+  CSV.foreach(@filename, "r") do |row|
+      name = row[0]
       add_student(name)
       line_count += 1
-    end
   end
   puts "Loaded #{line_count} from #{@filename}"
 end
